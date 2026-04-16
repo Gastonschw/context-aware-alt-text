@@ -1,0 +1,63 @@
+Context-Aware Alt Text Support - Project Progress
+===================================================
+Team Rocket: Rayaan Maredia, Kaiqi Yang, Simeon Belay, Gaston Schweitzer
+
+COMPLETED
+---------
+
+Week 1 - Image Detection & Extension Scaffold
+  [x] Chrome extension structure (Manifest V3)
+  [x] Content script scans all <img> elements on any page
+  [x] Classifies images: missing alt text, has alt text, decorative
+  [x] Red outline + warning badge (!) on images missing alt text
+  [x] Green outline on images with alt text
+  [x] Orange outline on decorative images
+  [x] Decorative detection heuristics (role=presentation, aria-hidden, empty alt, tiny images)
+  [x] Badge count on extension icon showing number of missing alt texts
+  [x] Popup with accessibility score (0-100), stats grid, and image list
+  [x] MutationObserver watches for dynamically loaded images
+  [x] Re-scan button in popup
+
+Week 2 - AI Caption Generation (TAMU API)
+  [x] Settings page for API key, server selection (all TAMU system servers), and model choice
+  [x] API integration module using TAMU OpenAI-compatible chat completions endpoint
+  [x] Vision support: sends images as base64 with surrounding page context
+  [x] System prompt for generating concise, accessible alt text
+  [x] Decorative image detection via AI (responds "DECORATIVE")
+  [x] Click warning badge (!) on any image to generate alt text for that image
+  [x] "Generate All Alt Text" button in popup for batch processing
+  [x] Generated alt text is injected into the DOM dynamically
+  [x] Visual feedback: loading spinner, success checkmark, error state
+  [x] API key stored locally in chrome.storage (never shared)
+
+TODO
+----
+
+Week 3 - UI Popup for User Input & Feedback
+  [ ] Alt text preview panel with edit capability
+  [ ] Accept/Reject buttons for each generated alt text
+  [ ] Manual edit field to customize descriptions
+  [ ] Distinguish decorative vs informative with toggle
+  [ ] Persist accepted alt texts across page reloads (via storage)
+
+Week 4 - Testing & Bug Fixes
+  [ ] Test on example sites (news sites, blogs, e-commerce)
+  [ ] Handle edge cases (SVGs, background images, lazy-loaded images)
+  [ ] Performance optimization for pages with many images
+  [ ] Error handling improvements
+  [ ] Final polish and documentation
+
+FILES
+-----
+alt-text-extension/
+  manifest.json         - Chrome Manifest V3 configuration
+  background.js         - Service worker: message routing, badge updates, API calls
+  content.js            - Content script: image scanning, badge injection, alt text injection
+  api.js                - TAMU API integration (OpenAI-compatible vision endpoint)
+  popup.html/js         - Extension popup UI
+  options.html/js       - Settings page (API key, server, model)
+  styles/
+    content.css         - On-page overlay styles
+    popup.css           - Popup styling
+    options.css         - Settings page styling
+  icons/                - Extension icons (16, 48, 128px)

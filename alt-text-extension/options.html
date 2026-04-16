@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt Text Support - Settings</title>
+  <link rel="stylesheet" href="styles/options.css">
+</head>
+<body>
+  <div class="options-container">
+    <h1>Alt Text Support Settings</h1>
+
+    <div class="form-group">
+      <label for="serverUrl">TAMU API Server</label>
+      <select id="serverUrl">
+        <option value="https://chat-api.tamu.ai">chat-api.tamu.ai (TAMU)</option>
+        <option value="https://chat-api.student.etamu.ai">chat-api.student.etamu.ai (ETAMU Student)</option>
+        <option value="https://chat-api.employee.etamu.ai">chat-api.employee.etamu.ai (ETAMU Employee)</option>
+        <option value="https://chat-api.pvamu.tamus.ai">chat-api.pvamu.tamus.ai (PVAMU)</option>
+        <option value="https://chat-api.rellis.tamus.ai">chat-api.rellis.tamus.ai (Rellis)</option>
+        <option value="https://chat-api.aibuilder.tarleton.edu">chat-api.aibuilder.tarleton.edu (Tarleton)</option>
+        <option value="https://chat-api.ag.tamus.ai">chat-api.ag.tamus.ai (AgriLife)</option>
+        <option value="https://chat-api.teex.tamus.ai">chat-api.teex.tamus.ai (TEEX)</option>
+        <option value="https://chat-api.tamius.tamus.ai">chat-api.tamius.tamus.ai (TAMIUS)</option>
+        <option value="https://chat-api.tamuct.ai">chat-api.tamuct.ai (TAMU-CT)</option>
+        <option value="https://chat-api.ai.tamuk.edu">chat-api.ai.tamuk.edu (TAMUK)</option>
+        <option value="https://chat-api.cyber.tamus.ai">chat-api.cyber.tamus.ai (Cyber)</option>
+        <option value="https://chat-api.so.tamus.ai">chat-api.so.tamus.ai (System Offices)</option>
+        <option value="custom">Custom URL...</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="customUrlGroup" style="display: none;">
+      <label for="customUrl">Custom Server URL</label>
+      <input type="url" id="customUrl" placeholder="https://your-server.example.com">
+    </div>
+
+    <div class="form-group">
+      <label for="apiKey">API Key</label>
+      <input type="password" id="apiKey" placeholder="Enter your TAMU API key">
+      <p class="hint">Your key is stored locally and never shared.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="modelName">Model</label>
+      <input type="text" id="modelName" placeholder="e.g. gpt-4o" value="gpt-4o">
+      <p class="hint">The vision-capable model to use for generating alt text.</p>
+    </div>
+
+    <div class="actions">
+      <button id="saveBtn" class="btn btn-primary">Save Settings</button>
+      <span id="status" class="status-msg"></span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

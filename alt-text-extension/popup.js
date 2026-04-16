@@ -10,6 +10,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const imageList = document.getElementById("imageList");
   const imageListSection = document.getElementById("imageListSection");
   const rescanBtn = document.getElementById("rescanBtn");
+  const generateAllBtn = document.getElementById("generateAllBtn");
+  const generateStatus = document.getElementById("generateStatus");
+  const apiWarning = document.getElementById("apiWarning");
+  const openSettingsLink = document.getElementById("openSettingsLink");
+  const settingsLink = document.getElementById("settingsLink");
+
+  let currentData = null;
+
+  // Check if API is configured
+  chrome.runtime.sendMessage({ type: "CHECK_API_CONFIG" }, (response) => {
+    if (!response?.configured) {
+      apiWarning.style.display = "block";
+      generateAllBtn.disabled = true;
+      generateAllBtn.style.opacity = "0.5";
+    }
+  });
+
+  // Settings links
+  function openSettings(e) {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  }
+  openSettingsLink.addEventListener("click", openSettings);
+  settingsLink.addEventListener("click", openSettings);
 
   function updateUI(data) {
     if (!data) {
@@ -17,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Update score
+    currentData = data;
+
     scoreValue.textContent = data.score;
     scoreCircle.className = "score-circle";
     if (data.score >= 80) {
@@ -28,13 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
       scoreCircle.classList.add("score-bad");
     }
 
-    // Update stats
     totalImages.textContent = data.total;
     missingAlt.textContent = data.missing;
     hasAlt.textContent = data.hasAlt;
     decorative.textContent = data.decorative;
 
-    // Update image list
+    // Show/hide generate button based on missing count
+    generateAllBtn.style.display = data.missing > 0 ? "block" : "none";
+
     const missingImages = data.images.filter((img) => img.status === "missing");
     if (missingImages.length > 0) {
       imageListSection.style.display = "block";
@@ -57,14 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
         srcSpan.className = "img-src";
         const filename = img.src.split("/").pop().split("?")[0] || "unknown";
         srcSpan.textContent = filename;
-
         info.appendChild(srcSpan);
 
         if (img.context) {
           const contextSpan = document.createElement("span");
           contextSpan.className = "img-context";
           contextSpan.textContent =
-            img.context.substring(0, 80) + (img.context.length > 80 ? "..." : "");
+            img.context.substring(0, 80) +
+            (img.context.length > 80 ? "..." : "");
           info.appendChild(contextSpan);
         }
 
@@ -114,5 +140,66 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       }
     });
+  });
+
+  // Generate All button
+  generateAllBtn.addEventListener("click", () => {
+    if (!currentData) return;
+
+    const missingImages = currentData.images.filter(
+      (img) => img.status === "missing"
+    );
+    if (missingImages.length === 0) return;
+
+    generateAllBtn.disabled = true;
+    generateAllBtn.textContent = "Generating...";
+    generateStatus.style.display = "block";
+    generateStatus.textContent = `Processing 0 / ${missingImages.length} images...`;
+
+    chrome.runtime.sendMessage(
+      {
+        type: "GENERATE_ALL_ALT_TEXT",
+        images: missingImages,
+      },
+      (response) => {
+        generateAllBtn.disabled = false;
+        generateAllBtn.textContent = "Generate All Alt Text";
+
+        if (response?.success) {
+          const succeeded = response.results.filter((r) => r.success).length;
+          const failed = response.results.filter((r) => !r.success).length;
+          generateStatus.textContent = `Done! ${succeeded} generated, ${failed} failed.`;
+
+          // Inject the generated alt texts into the page
+          chrome.tabs.query(
+            { active: true, currentWindow: true },
+            (tabs) => {
+              if (!tabs[0]) return;
+              for (const result of response.results) {
+                if (result.success && !result.isDecorative) {
+                  chrome.tabs.sendMessage(tabs[0].id, {
+                    type: "INJECT_ALT_TEXT",
+                    src: result.src,
+                    altText: result.altText,
+                  });
+                }
+              }
+              // Refresh the UI after injection
+              setTimeout(() => {
+                chrome.tabs.sendMessage(
+                  tabs[0].id,
+                  { type: "GET_RESULTS" },
+                  (r) => {
+                    if (!chrome.runtime.lastError) updateUI(r);
+                  }
+                );
+              }, 500);
+            }
+          );
+        } else {
+          generateStatus.textContent = `Error: ${response?.error || "Unknown error"}`;
+        }
+      }
+    );
   });
 });

@@ -1,9 +1,26 @@
 {
   "manifest_version": 3,
   "name": "Context-Aware Alt Text Support",
-  "version": "1.0.0",
-  "description": "Detects images missing alt text and generates context-aware descriptions to improve web accessibility.",
+  "version": "1.1.0",
+  "description": "Detects images missing alt text and generates context-aware descriptions using TAMU AI to improve web accessibility.",
   "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://chat-api.tamu.ai/*",
+    "https://chat-api.student.etamu.ai/*",
+    "https://chat-api.employee.etamu.ai/*",
+    "https://chat-api.pvamu.tamus.ai/*",
+    "https://chat-api.rellis.tamus.ai/*",
+    "https://chat-api.aibuilder.tarleton.edu/*",
+    "https://chat-api.ag.tamus.ai/*",
+    "https://chat-api.teex.tamus.ai/*",
+    "https://chat-api.tamius.tamus.ai/*",
+    "https://chat-api.tamuct.ai/*",
+    "https://chat-api.ai.tamuk.edu/*",
+    "https://chat-api.cyber.tamus.ai/*",
+    "https://chat-api.so.tamus.ai/*",
+    "https://chat-api.tamuv.tamus.ai/*",
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -27,5 +44,9 @@
       "css": ["styles/content.css"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
 }

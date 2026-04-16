@@ -61,3 +61,23 @@
   outline: 3px solid #ffa726 !important;
   outline-offset: 2px;
 }
+
+/* Loading state - spinning animation */
+.alt-text-loading {
+  animation: alt-text-spin 1s linear infinite;
+  font-size: 12px !important;
+}
+
+@keyframes alt-text-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Generated success state */
+.alt-text-generated {
+  cursor: default;
+}
+
+.alt-text-generated + .alt-text-tooltip {
+  display: block;
+}

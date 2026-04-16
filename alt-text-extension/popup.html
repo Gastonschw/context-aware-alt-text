@@ -44,11 +44,19 @@
       <ul class="image-list" id="imageList"></ul>
     </div>
 
-    <div class="actions">
-      <button id="rescanBtn" class="btn btn-primary">Re-scan Page</button>
+    <div id="apiWarning" class="api-warning" style="display: none;">
+      No API key configured. <a href="#" id="openSettingsLink">Open Settings</a>
     </div>
 
+    <div class="actions">
+      <button id="generateAllBtn" class="btn btn-generate">Generate All Alt Text</button>
+      <button id="rescanBtn" class="btn btn-secondary">Re-scan Page</button>
+    </div>
+
+    <div id="generateStatus" class="generate-status" style="display: none;"></div>
+
     <footer class="popup-footer">
+      <a href="#" id="settingsLink">Settings</a>
       <p>Team Rocket - Context-Aware Alt Text</p>
     </footer>
   </div>

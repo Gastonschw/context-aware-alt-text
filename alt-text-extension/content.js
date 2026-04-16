@@ -1,5 +1,6 @@
 // Context-Aware Alt Text Support - Content Script
-// Week 1: Detect images and isolate those with missing alt text
+// Week 1: Detect images missing alt text
+// Week 2: Generate and inject AI-based alt text via TAMU API
 
 (function () {
   "use strict";
@@ -7,13 +8,11 @@
   const SCAN_DELAY_MS = 500;
 
   function isDecorative(img) {
-    // Heuristics for decorative images
     if (img.getAttribute("role") === "presentation") return true;
     if (img.getAttribute("role") === "none") return true;
     if (img.getAttribute("aria-hidden") === "true") return true;
-    if (img.alt === "") return true; // Explicitly empty alt = decorative
+    if (img.alt === "") return true;
 
-    // Very small images are likely icons/spacers
     const rect = img.getBoundingClientRect();
     if (rect.width <= 5 && rect.height <= 5) return true;
 
@@ -21,7 +20,6 @@
   }
 
   function isMissingAltText(img) {
-    // alt attribute is completely absent (not the same as alt="")
     return !img.hasAttribute("alt");
   }
 
@@ -30,33 +28,104 @@
     if (!parent) return "";
 
     const text = parent.innerText || "";
-    // Get first 200 chars of surrounding text as context
     return text.substring(0, 200).trim();
   }
 
   function createWarningBadge(img, index) {
-    // Ensure the image's parent can hold absolute-positioned children
     const parent = img.parentElement;
     if (parent && getComputedStyle(parent).position === "static") {
       parent.style.position = "relative";
     }
 
-    // Warning badge
+    // Warning badge - now clickable to generate alt text
     const badge = document.createElement("span");
     badge.className = "alt-text-warning-badge";
     badge.textContent = "!";
-    badge.setAttribute("role", "img");
-    badge.setAttribute("aria-label", "This image is missing alt text");
+    badge.setAttribute("role", "button");
+    badge.setAttribute(
+      "aria-label",
+      "This image is missing alt text. Click to generate."
+    );
     badge.dataset.altTextIndex = index;
+    badge.title = "Click to generate alt text";
 
     // Tooltip
     const tooltip = document.createElement("span");
     tooltip.className = "alt-text-tooltip";
+    tooltip.dataset.altTextIndex = index;
     const src = img.src ? img.src.substring(0, 60) + "..." : "unknown";
-    tooltip.textContent = `Missing alt text. Source: ${src}`;
+    tooltip.textContent = `Missing alt text. Click ! to generate. Source: ${src}`;
+
+    // Click handler to generate alt text for this image
+    badge.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      generateForImage(img, badge, tooltip);
+    });
 
     img.parentElement.insertBefore(badge, img);
     img.parentElement.insertBefore(tooltip, img);
+  }
+
+  function generateForImage(img, badge, tooltip) {
+    // Show loading state
+    badge.textContent = "...";
+    badge.classList.add("alt-text-loading");
+    tooltip.textContent = "Generating alt text...";
+    tooltip.style.display = "block";
+
+    const context = getSurroundingContext(img);
+
+    chrome.runtime.sendMessage(
+      {
+        type: "GENERATE_ALT_TEXT",
+        imageUrl: img.src,
+        context: context,
+      },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          badge.textContent = "X";
+          badge.classList.remove("alt-text-loading");
+          tooltip.textContent = `Error: ${chrome.runtime.lastError.message}`;
+          return;
+        }
+
+        if (response && response.success) {
+          if (response.isDecorative) {
+            // Mark as decorative
+            img.setAttribute("alt", "");
+            img.setAttribute("role", "presentation");
+            img.classList.remove("alt-text-missing-overlay");
+            img.classList.add("alt-text-decorative");
+            badge.textContent = "D";
+            badge.classList.remove("alt-text-loading");
+            badge.classList.add("alt-text-generated");
+            badge.style.background = "#ffa726";
+            tooltip.textContent = "Marked as decorative";
+          } else {
+            // Inject the generated alt text
+            img.setAttribute("alt", response.altText);
+            img.classList.remove("alt-text-missing-overlay");
+            img.classList.add("alt-text-has-alt");
+
+            // Update badge to success state
+            badge.textContent = "\u2713";
+            badge.classList.remove("alt-text-loading");
+            badge.classList.add("alt-text-generated");
+            badge.style.background = "#43a047";
+            tooltip.textContent = `Alt: "${response.altText}"`;
+            tooltip.style.display = "block";
+          }
+
+          // Re-run scan to update counts
+          setTimeout(runScan, 100);
+        } else {
+          badge.textContent = "X";
+          badge.classList.remove("alt-text-loading");
+          tooltip.textContent = `Error: ${response?.error || "Unknown error"}`;
+        }
+      }
+    );
   }
 
   function scanPage() {
@@ -69,7 +138,7 @@
       images: [],
     };
 
-    // Clear any previous scan overlays
+    // Clear previous overlays
     document
       .querySelectorAll(
         ".alt-text-warning-badge, .alt-text-tooltip, .alt-text-missing-overlay, .alt-text-has-alt, .alt-text-decorative"
@@ -93,7 +162,6 @@
 
     images.forEach((img) => {
       const rect = img.getBoundingClientRect();
-      // Skip invisible images
       if (rect.width === 0 && rect.height === 0) return;
 
       const imgData = {
@@ -123,48 +191,54 @@
       results.images.push(imgData);
     });
 
-    // Calculate accessibility score (0-100)
     if (results.total > 0) {
       const nonDecorative = results.total - results.decorative;
       if (nonDecorative > 0) {
         results.score = Math.round((results.hasAlt / nonDecorative) * 100);
       } else {
-        results.score = 100; // All images are decorative
+        results.score = 100;
       }
     } else {
-      results.score = 100; // No images on page
+      results.score = 100;
     }
 
     return results;
   }
 
-  // Run scan after page loads
   let scanResults = null;
 
   function runScan() {
     scanResults = scanPage();
-    // Send results to background script for the popup
     chrome.runtime.sendMessage({
       type: "SCAN_RESULTS",
       data: scanResults,
     });
   }
 
-  // Initial scan with delay to let page finish rendering
   setTimeout(runScan, SCAN_DELAY_MS);
 
-  // Listen for rescan requests from popup
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "REQUEST_SCAN") {
       runScan();
       sendResponse(scanResults);
     } else if (message.type === "GET_RESULTS") {
       sendResponse(scanResults);
+    } else if (message.type === "INJECT_ALT_TEXT") {
+      // Inject alt text for a specific image by src
+      const img = document.querySelector(`img[src="${message.src}"]`);
+      if (img) {
+        img.setAttribute("alt", message.altText);
+        img.classList.remove("alt-text-missing-overlay");
+        img.classList.add("alt-text-has-alt");
+        runScan();
+        sendResponse({ success: true });
+      } else {
+        sendResponse({ success: false, error: "Image not found" });
+      }
     }
     return true;
   });
 
-  // Watch for dynamically added images
   const observer = new MutationObserver((mutations) => {
     let hasNewImages = false;
     for (const mutation of mutations) {
