@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aggie Campus Store</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f8f8f8; color: #222; }
+
+    /* Header */
+    .header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 14px 0; position: sticky; top: 0; z-index: 100; }
+    .header .inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+    .logo { height: 40px; }
+    .store-name { font-size: 20px; font-weight: 700; color: #500000; }
+    .search-bar { flex: 1; display: flex; }
+    .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; font-size: 14px; }
+    .search-bar button { padding: 8px 16px; background: #500000; color: #fff; border: none; border-radius: 0 4px 4px 0; cursor: pointer; }
+    .header-icons { display: flex; gap: 16px; margin-left: auto; align-items: center; font-size: 13px; color: #555; }
+    .header-icons img { width: 24px; height: 24px; }
+
+    /* Banner */
+    .banner { max-width: 1200px; margin: 20px auto 0; padding: 0 20px; }
+    .banner img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+
+    /* Category nav */
+    .categories { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .cat-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid #ccc; background: #fff; font-size: 13px; cursor: pointer; }
+    .cat-chip.active { background: #500000; color: #fff; border-color: #500000; }
+
+    /* Product Grid */
+    .section-title { max-width: 1200px; margin: 8px auto 12px; padding: 0 20px; font-size: 20px; font-weight: 700; }
+    .product-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .product-card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; transition: box-shadow 0.2s; }
+    .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .product-card img { width: 100%; height: 220px; object-fit: cover; }
+    .product-card .badge { position: absolute; top: 8px; left: 8px; background: #e53935; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 7px; border-radius: 3px; }
+    .product-wrap { position: relative; }
+    .product-body { padding: 12px; }
+    .product-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+    .product-body .price { font-size: 18px; font-weight: 700; color: #500000; }
+    .product-body .original-price { font-size: 13px; color: #aaa; text-decoration: line-through; margin-left: 6px; }
+    .product-body .rating { font-size: 12px; color: #f9a825; margin-top: 4px; }
+    .add-to-cart { width: 100%; padding: 8px; background: #500000; color: #fff; border: none; border-radius: 0 0 8px 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .add-to-cart:hover { background: #3e0000; }
+
+    /* Footer */
+    footer { background: #222; color: #aaa; padding: 24px 20px; font-size: 13px; margin-top: 20px; }
+    footer .inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="inner">
+    <!-- Logo — decorative (alt="") -->
+    <img class="logo" src="https://picsum.photos/seed/storelogo/120/40" alt="">
+    <span class="store-name">Aggie Campus Store</span>
+    <div class="search-bar">
+      <input type="text" placeholder="Search products...">
+      <button>Search</button>
+    </div>
+    <div class="header-icons">
+      <!-- Icon images — decorative -->
+      <img src="https://picsum.photos/seed/wishlist/24/24" alt="" title="Wishlist">
+      <img src="https://picsum.photos/seed/cart/24/24" alt="" title="Cart">
+      <img src="https://picsum.photos/seed/account/24/24" alt="" title="Account">
+    </div>
+  </div>
+</header>
+
+<!-- Promo banner — NO alt (should flag red) -->
+<div class="banner">
+  <img src="https://picsum.photos/seed/promobanner/1160/200" width="1160" height="200">
+</div>
+
+<div class="categories">
+  <span class="cat-chip active">All</span>
+  <span class="cat-chip">Apparel</span>
+  <span class="cat-chip">Textbooks</span>
+  <span class="cat-chip">Supplies</span>
+  <span class="cat-chip">Electronics</span>
+  <span class="cat-chip">Gifts</span>
+</div>
+
+<h2 class="section-title">Featured Products</h2>
+
+<div class="product-grid">
+
+  <!-- Product 1 — NO alt (should flag red) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod1/220/220" width="220" height="220">
+      <span class="badge">SALE</span>
+    </div>
+    <div class="product-body">
+      <h3>Maroon Classic Hoodie</h3>
+      <div><span class="price">$39.99</span><span class="original-price">$54.99</span></div>
+      <div class="rating">★★★★☆ (128)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 2 — HAS alt text (should flag green) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod2/220/220" width="220" height="220" alt="Navy blue Texas A&M University baseball cap with embroidered logo">
+    </div>
+    <div class="product-body">
+      <h3>Aggie Baseball Cap</h3>
+      <div><span class="price">$24.99</span></div>
+      <div class="rating">★★★★★ (94)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 3 — NO alt (should flag red) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod3/220/220" width="220" height="220">
+    </div>
+    <div class="product-body">
+      <h3>Calculus: Early Transcendentals (8th Ed.)</h3>
+      <div><span class="price">$149.00</span></div>
+      <div class="rating">★★★☆☆ (47)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 4 — NO alt (should flag red) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod4/220/220" width="220" height="220">
+      <span class="badge">NEW</span>
+    </div>
+    <div class="product-body">
+      <h3>Aggie Water Bottle — 32oz Insulated</h3>
+      <div><span class="price">$29.99</span></div>
+      <div class="rating">★★★★★ (212)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 5 — HAS alt text (should flag green) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod5/220/220" width="220" height="220" alt="A&M University branded mechanical pencil set in a clear zip pouch">
+    </div>
+    <div class="product-body">
+      <h3>Aggie Pencil & Pen Set</h3>
+      <div><span class="price">$12.99</span></div>
+      <div class="rating">★★★★☆ (66)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 6 — NO alt (should flag red) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod6/220/220" width="220" height="220">
+    </div>
+    <div class="product-body">
+      <h3>Aggie Phone Case — iPhone 15 Pro</h3>
+      <div><span class="price">$19.99</span></div>
+      <div class="rating">★★★★☆ (38)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 7 — NO alt (should flag red) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod7/220/220" width="220" height="220">
+    </div>
+    <div class="product-body">
+      <h3>Maroon Laptop Backpack</h3>
+      <div><span class="price">$64.99</span></div>
+      <div class="rating">★★★★★ (175)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+  <!-- Product 8 — HAS alt text (should flag green) -->
+  <div class="product-card">
+    <div class="product-wrap">
+      <img src="https://picsum.photos/seed/prod8/220/220" width="220" height="220" alt="White ceramic mug with Texas A&M University seal printed in maroon">
+    </div>
+    <div class="product-body">
+      <h3>Aggie Seal Coffee Mug</h3>
+      <div><span class="price">$16.99</span></div>
+      <div class="rating">★★★★☆ (89)</div>
+    </div>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+</div>
+
+<footer>
+  <div class="inner">
+    <!-- Decorative footer logo -->
+    <img src="https://picsum.photos/seed/footerstore/80/30" alt="">
+    <span>© 2026 Aggie Campus Store · Texas A&M University · All rights reserved.</span>
+    <span>Questions? <a href="#" style="color:#f48fb1">Contact Us</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

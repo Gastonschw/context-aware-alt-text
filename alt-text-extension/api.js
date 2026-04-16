@@ -157,6 +157,7 @@ async function generateAltText(imageUrl, surroundingContext) {
     model: settings.model,
     max_tokens: 300,
     temperature: 0,
+    stream: false,   // explicitly disable SSE streaming
     messages: [
       { role: "system", content: ALT_TEXT_SYSTEM_PROMPT },
       { role: "user", content: userContent },
@@ -180,7 +181,18 @@ async function generateAltText(imageUrl, surroundingContext) {
     throw new Error(apiErrorMessage(response.status, errorText));
   }
 
-  const data = await response.json();
+  // Some servers return SSE format ("data: {...}\n\ndata: [DONE]") even when
+  // stream:false is set. Parse the first "data: " chunk as a fallback.
+  const responseText = await response.text();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    const firstChunk = responseText.split("\n").find((l) => l.startsWith("data: ") && !l.includes("[DONE]"));
+    if (!firstChunk) throw new Error("Unreadable response from API server.");
+    data = JSON.parse(firstChunk.slice("data: ".length));
+  }
+
   const generatedText = data.choices?.[0]?.message?.content?.trim() || "";
 
   if (generatedText === "DECORATIVE") {
