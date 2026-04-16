@@ -23,7 +23,7 @@ async function getApiSettings() {
         resolve({
           baseUrl: data.tamuServerUrl || "https://chat-api.tamu.ai",
           apiKey: data.tamuApiKey || "",
-          model: data.tamuModel || "gpt-4o",
+          model: data.tamuModel || "gpt-4o-mini",
         });
       }
     );
@@ -82,6 +82,25 @@ function apiErrorMessage(status, body) {
     case 503: return "API server error. Please try again later.";
     default:  return `API request failed (${status}): ${body}`;
   }
+}
+
+/**
+ * Fetch available models from the TAMU API.
+ */
+async function fetchAvailableModels(serverUrl, apiKey) {
+  const modelsUrl = `${serverUrl}/openai/models`;
+  const response = await fetch(modelsUrl, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch models (${response.status})`);
+  }
+  const payload = await response.json();
+  const modelsData = payload.data || [];
+  return modelsData.map((m) => ({
+    id: m.id || m.openai?.id,
+    name: m.name || m.openai?.name || m.id,
+  }));
 }
 
 /**

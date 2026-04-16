@@ -83,6 +83,17 @@ input:focus, select:focus {
   background: #c62828;
 }
 
+.btn-fetch {
+  background: #555;
+  color: #fff;
+  white-space: nowrap;
+  padding: 10px 16px;
+}
+
+.btn-fetch:hover {
+  background: #333;
+}
+
 .status-msg {
   font-size: 13px;
   color: #43a047;

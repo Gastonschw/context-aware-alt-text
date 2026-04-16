@@ -59,6 +59,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // Fetch available models from TAMU API
+  if (message.type === "FETCH_MODELS") {
+    fetchAvailableModels(message.serverUrl, message.apiKey)
+      .then((models) => sendResponse({ success: true, models }))
+      .catch((err) =>
+        sendResponse({ success: false, error: err.message })
+      );
+    return true;
+  }
+
   // Persist accepted alt text to storage
   if (message.type === "SAVE_ALT_TEXT") {
     chrome.storage.local.get(["altTextStore"], (data) => {

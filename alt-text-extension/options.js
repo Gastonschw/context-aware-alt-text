@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const modelName = document.getElementById("modelName");
   const saveBtn = document.getElementById("saveBtn");
   const status = document.getElementById("status");
+  const fetchModelsBtn = document.getElementById("fetchModelsBtn");
+  const modelsList = document.getElementById("modelsList");
 
   // Show/hide custom URL field
   serverUrl.addEventListener("change", () => {
@@ -17,10 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load saved settings
   chrome.storage.local.get(
-    ["tamuServerUrl", "tamuApiKey", "tamuModel", "tamuCustomUrl"],
+    ["tamuServerUrl", "tamuApiKey", "tamuModel"],
     (data) => {
       if (data.tamuServerUrl) {
-        // Check if it matches a preset option
         const option = serverUrl.querySelector(
           `option[value="${data.tamuServerUrl}"]`
         );
@@ -36,6 +37,67 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.tamuModel) modelName.value = data.tamuModel;
     }
   );
+
+  // Fetch available models
+  fetchModelsBtn.addEventListener("click", () => {
+    const server =
+      serverUrl.value === "custom" ? customUrl.value.trim() : serverUrl.value;
+    const key = apiKey.value.trim();
+
+    if (!server || !key) {
+      status.textContent = "Please fill in server and API key first.";
+      status.style.color = "#e53935";
+      return;
+    }
+
+    fetchModelsBtn.disabled = true;
+    fetchModelsBtn.textContent = "Loading...";
+    modelsList.style.display = "none";
+
+    chrome.runtime.sendMessage(
+      { type: "FETCH_MODELS", serverUrl: server, apiKey: key },
+      (response) => {
+        fetchModelsBtn.disabled = false;
+        fetchModelsBtn.textContent = "Fetch Models";
+
+        if (response?.success && response.models.length > 0) {
+          modelsList.style.display = "block";
+          modelsList.innerHTML = "";
+
+          const select = document.createElement("select");
+          select.style.width = "100%";
+          select.style.padding = "8px";
+          select.style.borderRadius = "6px";
+          select.style.border = "1px solid #ddd";
+          select.style.fontSize = "13px";
+
+          response.models.forEach((m) => {
+            const opt = document.createElement("option");
+            opt.value = m.id;
+            opt.textContent = m.name || m.id;
+            select.appendChild(opt);
+          });
+
+          // Pre-select current model if it exists
+          if (modelName.value) {
+            select.value = modelName.value;
+          }
+
+          select.addEventListener("change", () => {
+            modelName.value = select.value;
+          });
+
+          modelsList.appendChild(select);
+          status.textContent = `Found ${response.models.length} models.`;
+          status.style.color = "#43a047";
+        } else {
+          status.textContent =
+            response?.error || "No models found. Check your server and API key.";
+          status.style.color = "#e53935";
+        }
+      }
+    );
+  });
 
   // Save settings
   saveBtn.addEventListener("click", () => {
@@ -58,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         tamuServerUrl: server,
         tamuApiKey: apiKey.value.trim(),
-        tamuModel: modelName.value.trim() || "gpt-4o",
+        tamuModel: modelName.value.trim() || "gpt-4o-mini",
       },
       () => {
         status.textContent = "Settings saved!";

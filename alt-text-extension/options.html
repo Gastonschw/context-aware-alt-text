@@ -43,8 +43,12 @@
 
     <div class="form-group">
       <label for="modelName">Model</label>
-      <input type="text" id="modelName" placeholder="e.g. gpt-4o" value="gpt-4o">
-      <p class="hint">The vision-capable model to use for generating alt text.</p>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="modelName" placeholder="e.g. gpt-4o-mini" value="gpt-4o-mini" style="flex: 1;">
+        <button id="fetchModelsBtn" class="btn btn-fetch">Fetch Models</button>
+      </div>
+      <div id="modelsList" style="display: none; margin-top: 8px;"></div>
+      <p class="hint">Enter a model name or click "Fetch Models" to see available options. Make sure your server and API key are filled in first.</p>
     </div>
 
     <div class="actions">
