@@ -32,7 +32,7 @@
     if (img.getAttribute("role") === "presentation") return true;
     if (img.getAttribute("role") === "none") return true;
     if (img.getAttribute("aria-hidden") === "true") return true;
-    if (img.alt === "") return true;
+    if (img.getAttribute("alt") === "") return true;
 
     const rect = img.getBoundingClientRect();
     if (rect.width <= 5 && rect.height <= 5) return true;

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alt Text Extension - Test Page</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    h1 { color: #e53935; }
+    h2 { color: #555; margin-top: 32px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .case { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 12px 0; display: flex; align-items: flex-start; gap: 16px; }
+    .case-info { flex: 1; }
+    .label { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 4px; }
+    .expected { font-size: 11px; color: #43a047; margin-top: 6px; }
+    img.test { display: block; width: 160px; height: 100px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+    button { margin-top: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h1>Alt Text Extension — Test Page</h1>
+<p>Open this file in Chrome with the extension loaded. Each case below tests a specific classification. Hit <strong>Re-scan Page</strong> in the popup after the page loads.</p>
+
+<!--
+  All images use inline SVG data URIs so they load instantly (no network race condition).
+  Each color-codes its expected outcome:
+    red background   → should get RED outline (missing alt)
+    green background → should get GREEN outline (has alt)
+    orange background → should get ORANGE outline (decorative)
+-->
+
+<!-- ── MISSING ALT (expect red outline + ! badge) ─────────────────────── -->
+<h2>Missing Alt Text — expect RED outline + "!" badge</h2>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23e53935'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3ENo alt attr%3C/text%3E%3C/svg%3E">
+  <div class="case-info">
+    <div class="label">Case 1 — no alt attribute at all</div>
+    <code>&lt;img src="..."&gt;</code>
+    <div class="expected">Expected: RED outline, listed in popup as missing</div>
+  </div>
+</div>
+
+<div class="case">
+  <a href="#">
+    <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23c62828'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3EIn a link%3C/text%3E%3C/svg%3E">
+  </a>
+  <div class="case-info">
+    <div class="label">Case 2 — no alt, inside an &lt;a&gt; tag</div>
+    <code>&lt;a&gt;&lt;img src="..."&gt;&lt;/a&gt;</code>
+    <div class="expected">Expected: RED outline</div>
+  </div>
+</div>
+
+<div class="case">
+  <figure>
+    <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23b71c1c'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3EIn a figure%3C/text%3E%3C/svg%3E">
+    <figcaption>A figcaption does not replace alt text</figcaption>
+  </figure>
+  <div class="case-info">
+    <div class="label">Case 3 — no alt, inside &lt;figure&gt; with &lt;figcaption&gt;</div>
+    <div class="expected">Expected: RED outline — caption ≠ alt text</div>
+  </div>
+</div>
+
+<!-- ── HAS ALT (expect green outline) ────────────────────────────────── -->
+<h2>Has Alt Text — expect GREEN outline</h2>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%2343a047'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3EHas alt%3C/text%3E%3C/svg%3E" alt="A green test image">
+  <div class="case-info">
+    <div class="label">Case 4 — meaningful alt text</div>
+    <code>&lt;img src="..." alt="A green test image"&gt;</code>
+    <div class="expected">Expected: GREEN outline</div>
+  </div>
+</div>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%232e7d32'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3EHas alt%3C/text%3E%3C/svg%3E" alt="Team presenting at the 2024 conference">
+  <div class="case-info">
+    <div class="label">Case 5 — alt text with surrounding prose</div>
+    <p>Our team presenting at the 2024 conference.</p>
+    <div class="expected">Expected: GREEN outline</div>
+  </div>
+</div>
+
+<!-- ── DECORATIVE (expect orange outline) ────────────────────────────── -->
+<h2>Decorative Images — expect ORANGE outline</h2>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23ffa726'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3Ealt%3D%22%22%3C/text%3E%3C/svg%3E" alt="">
+  <div class="case-info">
+    <div class="label">Case 6 — <code>alt=""</code> (explicitly empty — HTML spec decorative)</div>
+    <div class="expected">Expected: ORANGE outline</div>
+  </div>
+</div>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23fb8c00'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3Erole%3Dpresentation%3C/text%3E%3C/svg%3E" role="presentation">
+  <div class="case-info">
+    <div class="label">Case 7 — <code>role="presentation"</code></div>
+    <div class="expected">Expected: ORANGE outline</div>
+  </div>
+</div>
+
+<div class="case">
+  <img class="test" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23e65100'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3Earia-hidden%3C/text%3E%3C/svg%3E" aria-hidden="true">
+  <div class="case-info">
+    <div class="label">Case 8 — <code>aria-hidden="true"</code></div>
+    <div class="expected">Expected: ORANGE outline</div>
+  </div>
+</div>
+
+<!-- ── LAZY LOADING ──────────────────────────────────────────────────── -->
+<h2>Lazy-loaded Image — expect RED after src swap</h2>
+
+<div class="case">
+  <img id="lazy-img" class="test"
+    data-src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%239c27b0'/%3E%3Ctext x='80' y='50' text-anchor='middle' fill='white' font-family='sans-serif' font-size='13' dy='.35em'%3ELazy loaded%3C/text%3E%3C/svg%3E"
+    src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+    width="160" height="100">
+  <div class="case-info">
+    <div class="label">Case 9 — lazy load via <code>data-src</code> pattern</div>
+    <p>Currently shows a 1×1 transparent placeholder. The real src is in <code>data-src</code>.</p>
+    <button onclick="
+      const img = document.getElementById('lazy-img');
+      img.src = img.dataset.src;
+    ">Simulate lazy load (swap src in)</button>
+    <div class="expected">Expected: detected via data-src; goes RED after button click triggers src swap</div>
+  </div>
+</div>
+
+<!-- ── EDGE CASES ────────────────────────────────────────────────────── -->
+<h2>Edge Cases</h2>
+
+<div class="case">
+  <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="1" height="1">
+  <div class="case-info">
+    <div class="label">Case 10 — 1×1 tracking pixel (no alt)</div>
+    <div class="expected">Expected: SKIPPED entirely (too small to be content)</div>
+  </div>
+</div>
+
+<div class="case">
+  <img class="test" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAB4CAYAAABs7BkdAAAABmJLR0QA/wD/AP+gvaeTAAAAS0lEQVR4nO3BMQEAAADCoPVP7WsIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAMBtAABNKfSgwAAAABJRU5ErkJggg==">
+  <div class="case-info">
+    <div class="label">Case 11 — <code>data:</code> URI image with no alt</div>
+    <div class="expected">Expected: RED outline — inline images still need alt text</div>
+  </div>
+</div>
+
+</body>
+</html>
