@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt Text Support</title>
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>Alt Text Support</h1>
+      <p class="subtitle">Context-Aware Accessibility</p>
+    </header>
+
+    <div class="score-section">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-value" id="scoreValue">--</span>
+      </div>
+      <p class="score-label">Accessibility Score</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number" id="totalImages">0</span>
+        <span class="stat-label">Total Images</span>
+      </div>
+      <div class="stat-card stat-missing">
+        <span class="stat-number" id="missingAlt">0</span>
+        <span class="stat-label">Missing Alt</span>
+      </div>
+      <div class="stat-card stat-good">
+        <span class="stat-number" id="hasAlt">0</span>
+        <span class="stat-label">Has Alt Text</span>
+      </div>
+      <div class="stat-card stat-decorative">
+        <span class="stat-number" id="decorative">0</span>
+        <span class="stat-label">Decorative</span>
+      </div>
+    </div>
+
+    <div class="image-list-section" id="imageListSection" style="display: none;">
+      <h2>Images Missing Alt Text</h2>
+      <ul class="image-list" id="imageList"></ul>
+    </div>
+
+    <div class="actions">
+      <button id="rescanBtn" class="btn btn-primary">Re-scan Page</button>
+    </div>
+
+    <footer class="popup-footer">
+      <p>Team Rocket - Context-Aware Alt Text</p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+.alt-text-missing-overlay {
+  position: relative;
+  outline: 3px solid #e53935 !important;
+  outline-offset: 2px;
+}
+
+.alt-text-warning-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 10000;
+  background: #e53935;
+  color: #fff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+.alt-text-warning-badge:hover {
+  transform: scale(1.1);
+}
+
+.alt-text-tooltip {
+  position: absolute;
+  top: 36px;
+  left: 4px;
+  z-index: 10001;
+  background: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  max-width: 280px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  line-height: 1.4;
+}
+
+.alt-text-warning-badge:hover + .alt-text-tooltip,
+.alt-text-tooltip:hover {
+  display: block;
+}
+
+.alt-text-has-alt {
+  outline: 3px solid #43a047 !important;
+  outline-offset: 2px;
+}
+
+.alt-text-decorative {
+  outline: 3px solid #ffa726 !important;
+  outline-offset: 2px;
+}
