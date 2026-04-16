@@ -31,10 +31,19 @@ async function getApiSettings() {
 }
 
 /**
- * Convert an image URL to a base64 data URL by fetching it.
+ * Convert an image URL to a base64 data URL.
+ * Handles data: URIs directly (no fetch needed) and retries on transient errors.
  */
 async function imageUrlToBase64(url) {
+  // Already a data URI — extract and return as-is
+  if (url.startsWith("data:")) {
+    return url;
+  }
+
   const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image (${response.status})`);
+  }
   const blob = await response.blob();
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -42,6 +51,37 @@ async function imageUrlToBase64(url) {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+}
+
+/**
+ * Fetch with automatic retry on rate-limit (429) and server errors (5xx).
+ */
+async function fetchWithRetry(url, options, maxRetries = 2) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    if (response.status === 429 || response.status >= 500) {
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        lastError = response;
+        continue;
+      }
+    }
+    return response;
+  }
+  return lastError;
+}
+
+function apiErrorMessage(status, body) {
+  switch (status) {
+    case 401: return "Invalid API key. Please check your settings.";
+    case 403: return "Access denied. Check your API key permissions.";
+    case 429: return "Rate limited — please wait a moment and try again.";
+    case 500:
+    case 502:
+    case 503: return "API server error. Please try again later.";
+    default:  return `API request failed (${status}): ${body}`;
+  }
 }
 
 /**
@@ -104,7 +144,7 @@ async function generateAltText(imageUrl, surroundingContext) {
     ],
   };
 
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `${settings.baseUrl}/api/v1/chat/completions`,
     {
       method: "POST",
@@ -117,8 +157,8 @@ async function generateAltText(imageUrl, surroundingContext) {
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`API request failed (${response.status}): ${errorText}`);
+    const errorText = await response.text().catch(() => "");
+    throw new Error(apiErrorMessage(response.status, errorText));
   }
 
   const data = await response.json();

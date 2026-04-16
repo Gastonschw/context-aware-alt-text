@@ -7,6 +7,27 @@
 
   const SCAN_DELAY_MS = 500;
 
+  // Returns the best available src for an image, handling lazy-load patterns
+  // where libraries store the real URL in data-src / data-lazy / data-original
+  function getEffectiveSrc(img) {
+    if (img.src && !img.src.endsWith(window.location.href)) {
+      // If the loaded image is a tiny placeholder (1×1 spacer) but a real src
+      // is stashed in a data attribute, prefer that.
+      const isPlaceholder =
+        img.naturalWidth <= 1 &&
+        img.naturalHeight <= 1 &&
+        img.complete;
+      if (!isPlaceholder) return img.src;
+    }
+    return (
+      img.dataset.src ||
+      img.dataset.lazySrc ||
+      img.dataset.original ||
+      img.dataset.lazy ||
+      img.src
+    );
+  }
+
   function isDecorative(img) {
     if (img.getAttribute("role") === "presentation") return true;
     if (img.getAttribute("role") === "none") return true;
@@ -118,7 +139,7 @@
           }
 
           // Re-run scan to update counts
-          setTimeout(runScan, 100);
+          scheduleScan();
         } else {
           badge.textContent = "X";
           badge.classList.remove("alt-text-loading");
@@ -165,7 +186,7 @@
       if (rect.width === 0 && rect.height === 0) return;
 
       const imgData = {
-        src: img.src,
+        src: getEffectiveSrc(img),
         width: Math.round(rect.width),
         height: Math.round(rect.height),
         context: getSurroundingContext(img),
@@ -205,7 +226,28 @@
     return results;
   }
 
+  function applyPersistedAltTexts() {
+    return new Promise((resolve) => {
+      const pageKey = location.href;
+      chrome.storage.local.get(["altTextStore"], (data) => {
+        const store = (data.altTextStore || {})[pageKey] || {};
+        for (const [src, entry] of Object.entries(store)) {
+          const img = document.querySelector(`img[src="${src}"]`);
+          if (!img) continue;
+          if (entry.decorative) {
+            img.setAttribute("alt", "");
+            img.setAttribute("role", "presentation");
+          } else if (entry.altText) {
+            img.setAttribute("alt", entry.altText);
+          }
+        }
+        resolve();
+      });
+    });
+  }
+
   let scanResults = null;
+  let scanTimer = null;
 
   function runScan() {
     scanResults = scanPage();
@@ -215,7 +257,16 @@
     });
   }
 
-  setTimeout(runScan, SCAN_DELAY_MS);
+  // Debounced scheduler — collapses rapid mutations into a single scan
+  function scheduleScan() {
+    if (scanTimer) clearTimeout(scanTimer);
+    scanTimer = setTimeout(runScan, SCAN_DELAY_MS);
+  }
+
+  setTimeout(async () => {
+    await applyPersistedAltTexts();
+    runScan();
+  }, SCAN_DELAY_MS);
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "REQUEST_SCAN") {
@@ -235,25 +286,50 @@
       } else {
         sendResponse({ success: false, error: "Image not found" });
       }
+    } else if (message.type === "INJECT_DECORATIVE") {
+      const img = document.querySelector(`img[src="${message.src}"]`);
+      if (img) {
+        img.setAttribute("alt", "");
+        img.setAttribute("role", "presentation");
+        img.classList.remove("alt-text-missing-overlay");
+        img.classList.add("alt-text-decorative");
+        runScan();
+        sendResponse({ success: true });
+      } else {
+        sendResponse({ success: false, error: "Image not found" });
+      }
     }
     return true;
   });
 
   const observer = new MutationObserver((mutations) => {
-    let hasNewImages = false;
+    let shouldRescan = false;
     for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeName === "IMG" || node.querySelector?.("img")) {
-          hasNewImages = true;
-          break;
+      // New <img> nodes added (infinite scroll, dynamic content)
+      if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeName === "IMG" || node.querySelector?.("img")) {
+            shouldRescan = true;
+            break;
+          }
         }
       }
-      if (hasNewImages) break;
+      // Lazy-load: src/data-src attribute swapped in on an existing <img>
+      if (
+        mutation.type === "attributes" &&
+        mutation.target.nodeName === "IMG"
+      ) {
+        shouldRescan = true;
+      }
+      if (shouldRescan) break;
     }
-    if (hasNewImages) {
-      setTimeout(runScan, SCAN_DELAY_MS);
-    }
+    if (shouldRescan) scheduleScan();
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["src", "data-src", "data-lazy", "data-original"],
+  });
 })();

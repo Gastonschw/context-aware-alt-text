@@ -58,6 +58,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  // Persist accepted alt text to storage
+  if (message.type === "SAVE_ALT_TEXT") {
+    chrome.storage.local.get(["altTextStore"], (data) => {
+      const store = data.altTextStore || {};
+      if (!store[message.pageUrl]) store[message.pageUrl] = {};
+      store[message.pageUrl][message.src] = {
+        altText: message.altText,
+        decorative: message.decorative,
+      };
+      chrome.storage.local.set({ altTextStore: store }, () => {
+        if (chrome.runtime.lastError) {
+          sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+          sendResponse({ success: true });
+        }
+      });
+    });
+    return true;
+  }
 });
 
 // Clean up when tab is closed

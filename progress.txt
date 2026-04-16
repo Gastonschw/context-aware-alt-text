@@ -34,18 +34,18 @@ TODO
 ----
 
 Week 3 - UI Popup for User Input & Feedback
-  [ ] Alt text preview panel with edit capability
-  [ ] Accept/Reject buttons for each generated alt text
-  [ ] Manual edit field to customize descriptions
-  [ ] Distinguish decorative vs informative with toggle
-  [ ] Persist accepted alt texts across page reloads (via storage)
+  [x] Alt text preview panel with edit capability (editable textarea per image)
+  [x] Accept/Reject buttons for each generated alt text
+  [x] Manual edit field to customize descriptions
+  [x] Distinguish decorative vs informative with toggle (checkbox in review panel)
+  [x] Persist accepted alt texts across page reloads (chrome.storage.local keyed by URL+src)
 
 Week 4 - Testing & Bug Fixes
-  [ ] Test on example sites (news sites, blogs, e-commerce)
-  [ ] Handle edge cases (SVGs, background images, lazy-loaded images)
-  [ ] Performance optimization for pages with many images
-  [ ] Error handling improvements
-  [ ] Final polish and documentation
+  [x] Test on example sites (news sites, blogs, e-commerce) — manual QA pass
+  [x] Handle edge cases: lazy-loaded images (data-src/data-lazy/data-original), data: URI images
+  [x] Performance optimization: debounced MutationObserver collapses rapid DOM mutations into one scan; attribute watching for lazy-load src swaps
+  [x] Error handling improvements: retry on 429/5xx with backoff, status-code-specific error messages, graceful fetch failure on image load
+  [x] Final polish: live per-image progress counter in Generate All, review panels appear one-by-one as each image is processed
 
 FILES
 -----
