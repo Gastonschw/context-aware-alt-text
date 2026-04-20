@@ -139,6 +139,11 @@ body {
   gap: 8px;
 }
 
+.image-list li.item-active {
+  border-color: #e53935;
+  box-shadow: 0 0 0 1px rgba(229, 57, 53, 0.2);
+}
+
 .image-list li img {
   width: 40px;
   height: 40px;
@@ -224,6 +229,63 @@ body {
   color: #555;
   padding: 6px 0;
   text-align: center;
+}
+
+.bulk-review-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-accept-all,
+.btn-reject-all {
+  width: auto;
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.btn-accept-all {
+  background: #43a047;
+  color: #fff;
+}
+
+.btn-accept-all:hover {
+  background: #2e7d32;
+}
+
+.btn-reject-all {
+  background: #eee;
+  color: #555;
+}
+
+.btn-reject-all:hover {
+  background: #ddd;
+}
+
+.shortcut-help {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+  color: #555;
+}
+
+.shortcut-help span {
+  display: block;
+}
+
+.shortcut-help kbd {
+  background: #f3f3f3;
+  border: 1px solid #d7d7d7;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 10px;
+  padding: 1px 4px;
 }
 
 /* Footer */

@@ -1,4 +1,4 @@
-''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -54,6 +54,18 @@
     </div>
 
     <div id="generateStatus" class="generate-status" style="display: none;"></div>
+    <div class="bulk-review-actions" id="bulkReviewActions" style="display: none;">
+      <button id="acceptAllBtn" class="btn btn-accept-all">Accept All</button>
+      <button id="rejectAllBtn" class="btn btn-reject-all">Reject All</button>
+    </div>
+
+    <div class="shortcut-help">
+      <span><kbd>Alt</kbd>+<kbd>G</kbd> Generate current</span>
+      <span><kbd>Alt</kbd>+<kbd>A</kbd> Accept current</span>
+      <span><kbd>Alt</kbd>+<kbd>R</kbd> Reject current</span>
+      <span><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> Accept all</span>
+      <span><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> Reject all</span>
+    </div>
 
     <footer class="popup-footer">
       <a href="#" id="settingsLink">Settings</a>

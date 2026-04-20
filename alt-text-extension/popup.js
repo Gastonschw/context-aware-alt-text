@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const rescanBtn = document.getElementById("rescanBtn");
   const generateAllBtn = document.getElementById("generateAllBtn");
   const generateStatus = document.getElementById("generateStatus");
+  const bulkReviewActions = document.getElementById("bulkReviewActions");
+  const acceptAllBtn = document.getElementById("acceptAllBtn");
+  const rejectAllBtn = document.getElementById("rejectAllBtn");
   const apiWarning = document.getElementById("apiWarning");
   const openSettingsLink = document.getElementById("openSettingsLink");
   const settingsLink = document.getElementById("settingsLink");
@@ -50,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildImageListItem(img) {
     const li = document.createElement("li");
     li.dataset.imgSrc = img.src;
+    li.tabIndex = 0;
 
     // Thumbnail
     const thumbnail = document.createElement("img");
@@ -91,6 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
     genBtn.addEventListener("click", () =>
       generateForItem(img, genBtn, reviewPanel)
     );
+
+    li.addEventListener("click", () => setActiveListItem(li));
+    li.addEventListener("focusin", () => setActiveListItem(li));
+    li.addEventListener("mouseenter", () => setActiveListItem(li));
 
     li.appendChild(thumbnail);
     li.appendChild(info);
@@ -173,6 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       textarea.placeholder = `Error: ${result.error || "Unknown error"}`;
     }
+
+    updateBulkActionVisibility();
   }
 
   function generateForItem(img, genBtn, reviewPanel) {
@@ -188,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function acceptAltText(src, altText, isDecorative, li) {
+  function acceptAltText(src, altText, isDecorative, li, skipRefresh = false) {
     if (!currentTabId) return;
 
     // Inject into the page DOM
@@ -218,13 +228,15 @@ document.addEventListener("DOMContentLoaded", () => {
       : `\u2713 "${altText.substring(0, 50)}${altText.length > 50 ? "..." : ""}"`;
     reviewPanel.innerHTML = `<span class="accepted-label">${label}</span>`;
     li.classList.add("item-accepted");
+    li.dataset.accepted = "true";
+    updateBulkActionVisibility();
 
     // Refresh counts after a short delay
-    setTimeout(() => {
-      chrome.tabs.sendMessage(currentTabId, { type: "GET_RESULTS" }, (r) => {
-        if (!chrome.runtime.lastError) updateScoreAndStats(r);
-      });
-    }, 300);
+    if (!skipRefresh) {
+      setTimeout(() => {
+        refreshScoreFromPage();
+      }, 300);
+    }
   }
 
   function rejectAltText(li, reviewPanel) {
@@ -237,6 +249,8 @@ document.addEventListener("DOMContentLoaded", () => {
     reviewPanel.querySelector(".alt-text-edit").value = "";
     reviewPanel.querySelector(".alt-text-edit").disabled = false;
     reviewPanel.querySelector(".decorative-check").checked = false;
+    li.dataset.accepted = "";
+    updateBulkActionVisibility();
   }
 
   // ── UI update ────────────────────────────────────────────────────────────
@@ -272,9 +286,114 @@ document.addEventListener("DOMContentLoaded", () => {
       missingImages.forEach((img) => {
         imageList.appendChild(buildImageListItem(img));
       });
+      const firstItem = imageList.querySelector("li");
+      if (firstItem) setActiveListItem(firstItem);
     } else {
       imageListSection.style.display = "none";
     }
+    updateBulkActionVisibility();
+  }
+
+  function refreshScoreFromPage() {
+    if (!currentTabId) return;
+    chrome.tabs.sendMessage(currentTabId, { type: "GET_RESULTS" }, (r) => {
+      if (!chrome.runtime.lastError) updateScoreAndStats(r);
+    });
+  }
+
+  function getAllListItems() {
+    return Array.from(imageList.querySelectorAll("li"));
+  }
+
+  function setActiveListItem(li) {
+    getAllListItems().forEach((item) => item.classList.remove("item-active"));
+    if (li) li.classList.add("item-active");
+  }
+
+  function getActiveListItem() {
+    return (
+      imageList.querySelector("li.item-active") ||
+      imageList.querySelector("li")
+    );
+  }
+
+  function getActionableItems() {
+    return getAllListItems().filter((li) => {
+      const panel = li.querySelector(".review-panel");
+      const acceptBtn = panel?.querySelector(".btn-accept");
+      return panel && panel.style.display !== "none" && !!acceptBtn;
+    });
+  }
+
+  function updateBulkActionVisibility() {
+    const actionableCount = getActionableItems().length;
+    bulkReviewActions.style.display = actionableCount > 0 ? "flex" : "none";
+  }
+
+  function generateCurrentItem() {
+    const li = getActiveListItem();
+    if (!li) return;
+    const genBtn = li.querySelector(".btn-gen-single");
+    if (!genBtn || genBtn.style.display === "none" || genBtn.disabled) return;
+    genBtn.click();
+  }
+
+  function acceptCurrentItem() {
+    const li = getActiveListItem();
+    if (!li) return;
+    const acceptBtn = li.querySelector(".review-panel .btn-accept");
+    if (!acceptBtn) return;
+    acceptBtn.click();
+  }
+
+  function rejectCurrentItem() {
+    const li = getActiveListItem();
+    if (!li) return;
+    const rejectBtn = li.querySelector(".review-panel .btn-reject");
+    if (!rejectBtn) return;
+    rejectBtn.click();
+  }
+
+  function acceptAllActionable() {
+    const items = getActionableItems();
+    if (!items.length) return;
+    items.forEach((li) => {
+      const src = li.dataset.imgSrc;
+      const panel = li.querySelector(".review-panel");
+      const textarea = panel.querySelector(".alt-text-edit");
+      const decorativeCheck = panel.querySelector(".decorative-check");
+      if (!decorativeCheck.checked && !textarea.value.trim()) return;
+      acceptAltText(
+        src,
+        textarea.value.trim(),
+        decorativeCheck.checked,
+        li,
+        true
+      );
+    });
+    setTimeout(() => refreshScoreFromPage(), 300);
+  }
+
+  function rejectAllActionable() {
+    const items = getActionableItems();
+    items.forEach((li) => {
+      const panel = li.querySelector(".review-panel");
+      rejectAltText(li, panel);
+    });
+  }
+
+  function handleKeyboardShortcut(e) {
+    if (!e.altKey || e.repeat) return;
+    const key = e.key.toLowerCase();
+    const actionMap = {
+      g: () => generateCurrentItem(),
+      a: () => (e.shiftKey ? acceptAllActionable() : acceptCurrentItem()),
+      r: () => (e.shiftKey ? rejectAllActionable() : rejectCurrentItem()),
+    };
+    const action = actionMap[key];
+    if (!action) return;
+    e.preventDefault();
+    action();
   }
 
   // ── Initial load ─────────────────────────────────────────────────────────
@@ -337,6 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `[data-img-src="${CSS.escape(img.src)}"]`
       );
       if (!li) continue;
+      setActiveListItem(li);
 
       const genBtn = li.querySelector(".btn-gen-single");
       const reviewPanel = li.querySelector(".review-panel");
@@ -370,4 +490,8 @@ document.addEventListener("DOMContentLoaded", () => {
       generateStatus.style.display = "none";
     }, 3000);
   });
+
+  acceptAllBtn.addEventListener("click", acceptAllActionable);
+  rejectAllBtn.addEventListener("click", rejectAllActionable);
+  document.addEventListener("keydown", handleKeyboardShortcut);
 });
