@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alt Text Support - Info</title>
+  <link rel="stylesheet" href="styles/info.css">
+</head>
+<body>
+  <main class="info-container">
+    <h1>Context-Aware Alt Text Support</h1>
+    <p class="version">Version 1.1.0</p>
+    <p class="tagline">A Chrome extension that detects images missing alt text and generates context-aware descriptions using AI to improve web accessibility.</p>
+
+    <section aria-labelledby="how-heading">
+      <h2 id="how-heading">How It Works</h2>
+      <ol class="steps">
+        <li class="step">
+          <h3>Detect</h3>
+          <p>Scans every image on the page. Images missing alt text are outlined in <strong>red</strong>, decorative images in <strong>orange</strong>, and images with alt text in <strong>green</strong>.</p>
+        </li>
+        <li class="step">
+          <h3>Generate</h3>
+          <p>Sends the image along with surrounding page context to the TAMU AI vision API, which returns a concise, accurate description.</p>
+        </li>
+        <li class="step">
+          <h3>Review</h3>
+          <p>Each suggestion is shown in an editable panel. You can accept, reject, edit, or mark images as decorative — individually or in bulk.</p>
+        </li>
+        <li class="step">
+          <h3>Persist</h3>
+          <p>Accepted alt texts are saved locally and survive page reloads, so you don't lose your work.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="shortcuts-heading">
+      <h2 id="shortcuts-heading">Keyboard Shortcuts</h2>
+      <p class="section-hint">These shortcuts work inside the extension popup.</p>
+      <table class="shortcut-table" aria-label="Keyboard shortcuts">
+        <thead>
+          <tr><th scope="col">Shortcut</th><th scope="col">Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><kbd>Alt</kbd> + <kbd>G</kbd></td><td>Generate alt text for the selected image</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>A</kbd></td><td>Accept the current suggestion</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>R</kbd></td><td>Reject the current suggestion</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>A</kbd></td><td>Accept all suggestions</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></td><td>Reject all suggestions</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="start-heading">
+      <h2 id="start-heading">Getting Started</h2>
+      <ol class="getting-started" aria-label="Getting started steps">
+        <li>Open <strong>Settings</strong> from the extension popup and enter your TAMU API server and API key.</li>
+        <li>Navigate to any webpage and click the extension icon to see the accessibility score.</li>
+        <li>Click <strong>Generate All Alt Text</strong> or generate descriptions for individual images.</li>
+        <li>Review, edit, and accept the suggestions. They will be saved automatically.</li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="color-heading">
+      <h2 id="color-heading">Color Guide</h2>
+      <div class="color-guide">
+        <div class="color-item">
+          <span class="color-swatch" style="background:#e53935;" aria-hidden="true"></span>
+          <span><strong>Red outline</strong> — Image is missing alt text</span>
+        </div>
+        <div class="color-item">
+          <span class="color-swatch" style="background:#ffa726;" aria-hidden="true"></span>
+          <span><strong>Orange outline</strong> — Image is decorative</span>
+        </div>
+        <div class="color-item">
+          <span class="color-swatch" style="background:#43a047;" aria-hidden="true"></span>
+          <span><strong>Green outline</strong> — Image has alt text</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="about-heading">
+      <h2 id="about-heading">About</h2>
+      <p>Built by <strong>Team Rocket</strong> — Rayaan Maredia, Kaiqi Yang, Simeon Belay, and Gaston Schweitzer.</p>
+      <p class="hint">This extension uses the TAMU AI API for image analysis. Your API key is stored locally and never shared with third parties.</p>
+    </section>
+
+    <footer class="info-footer">
+      <p>Context-Aware Alt Text Support &middot; Team Rocket</p>
+    </footer>
+  </main>
+</body>
+</html>

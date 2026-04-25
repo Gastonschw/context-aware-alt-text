@@ -301,8 +301,7 @@ body {
   color: #e53935;
   text-decoration: none;
   font-weight: 600;
-  display: block;
-  margin-bottom: 4px;
+  margin: 0 6px 4px;
 }
 
 /* Per-image Generate button */

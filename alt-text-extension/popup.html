@@ -14,13 +14,13 @@
     </header>
 
     <div class="score-section">
-      <div class="score-circle" id="scoreCircle">
-        <span class="score-value" id="scoreValue">--</span>
+      <div class="score-circle" id="scoreCircle" role="img" aria-label="Accessibility Score: not available">
+        <span class="score-value" id="scoreValue" aria-hidden="true">--</span>
       </div>
       <p class="score-label">Accessibility Score</p>
     </div>
 
-    <div class="stats-grid">
+    <div class="stats-grid" role="group" aria-label="Image statistics">
       <div class="stat-card">
         <span class="stat-number" id="totalImages">0</span>
         <span class="stat-label">Total Images</span>
@@ -39,12 +39,12 @@
       </div>
     </div>
 
-    <div class="image-list-section" id="imageListSection" style="display: none;">
+    <div class="image-list-section" id="imageListSection" style="display: none;" aria-live="polite">
       <h2>Images Missing Alt Text</h2>
-      <ul class="image-list" id="imageList"></ul>
+      <ul class="image-list" id="imageList" aria-label="Images missing alt text"></ul>
     </div>
 
-    <div id="apiWarning" class="api-warning" style="display: none;">
+    <div id="apiWarning" class="api-warning" style="display: none;" role="alert">
       No API key configured. <a href="#" id="openSettingsLink">Open Settings</a>
     </div>
 
@@ -53,13 +53,13 @@
       <button id="rescanBtn" class="btn btn-secondary">Re-scan Page</button>
     </div>
 
-    <div id="generateStatus" class="generate-status" style="display: none;"></div>
+    <div id="generateStatus" class="generate-status" style="display: none;" role="status" aria-live="polite"></div>
     <div class="bulk-review-actions" id="bulkReviewActions" style="display: none;">
       <button id="acceptAllBtn" class="btn btn-accept-all">Accept All</button>
       <button id="rejectAllBtn" class="btn btn-reject-all">Reject All</button>
     </div>
 
-    <div class="shortcut-help">
+    <div class="shortcut-help" aria-label="Keyboard shortcuts">
       <span><kbd>Alt</kbd>+<kbd>G</kbd> Generate current</span>
       <span><kbd>Alt</kbd>+<kbd>A</kbd> Accept current</span>
       <span><kbd>Alt</kbd>+<kbd>R</kbd> Reject current</span>
@@ -68,7 +68,8 @@
     </div>
 
     <footer class="popup-footer">
-      <a href="#" id="settingsLink">Settings</a>
+      <a href="#" id="settingsLink" aria-label="Open settings">Settings</a>
+      <a href="#" id="infoLink" aria-label="View extension info">Info</a>
       <p>Team Rocket - Context-Aware Alt Text</p>
     </footer>
   </div>

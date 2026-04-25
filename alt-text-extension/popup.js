@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiWarning = document.getElementById("apiWarning");
   const openSettingsLink = document.getElementById("openSettingsLink");
   const settingsLink = document.getElementById("settingsLink");
+  const infoLink = document.getElementById("infoLink");
 
   let currentData = null;
   let currentTabId = null;
@@ -47,6 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   openSettingsLink.addEventListener("click", openSettings);
   settingsLink.addEventListener("click", openSettings);
+  infoLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: chrome.runtime.getURL("info.html") });
+  });
 
   // ── Per-image list item builder ──────────────────────────────────────────
 
@@ -54,18 +59,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const li = document.createElement("li");
     li.dataset.imgSrc = img.src;
     li.tabIndex = 0;
+    li.setAttribute("role", "listitem");
+
+    const filename = img.src.split("/").pop().split("?")[0] || "unknown";
+    li.setAttribute("aria-label", `Image: ${filename}, missing alt text`);
 
     // Thumbnail
     const thumbnail = document.createElement("img");
     thumbnail.src = img.src;
-    thumbnail.alt = "Thumbnail preview";
+    thumbnail.alt = `Thumbnail of ${filename}`;
     thumbnail.onerror = () => { thumbnail.style.display = "none"; };
 
     // Info column
     const info = document.createElement("div");
     info.className = "img-info";
 
-    const filename = img.src.split("/").pop().split("?")[0] || "unknown";
     const srcSpan = document.createElement("span");
     srcSpan.className = "img-src";
     srcSpan.textContent = filename;
@@ -85,13 +93,14 @@ document.addEventListener("DOMContentLoaded", () => {
     info.appendChild(sizeSpan);
 
     // Review panel (hidden until generation completes)
-    const reviewPanel = buildReviewPanel(img.src);
+    const reviewPanel = buildReviewPanel(img.src, filename);
     info.appendChild(reviewPanel);
 
     // Per-image Generate button
     const genBtn = document.createElement("button");
     genBtn.className = "btn-gen-single";
     genBtn.textContent = "Generate";
+    genBtn.setAttribute("aria-label", `Generate alt text for ${filename}`);
     genBtn.addEventListener("click", () =>
       generateForItem(img, genBtn, reviewPanel)
     );
@@ -100,16 +109,25 @@ document.addEventListener("DOMContentLoaded", () => {
     li.addEventListener("focusin", () => setActiveListItem(li));
     li.addEventListener("mouseenter", () => setActiveListItem(li));
 
+    // Keyboard activation for list items
+    li.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setActiveListItem(li);
+      }
+    });
+
     li.appendChild(thumbnail);
     li.appendChild(info);
     li.appendChild(genBtn);
     return li;
   }
 
-  function buildReviewPanel(src) {
+  function buildReviewPanel(src, filename) {
     const panel = document.createElement("div");
     panel.className = "review-panel";
     panel.style.display = "none";
+    panel.setAttribute("aria-hidden", "true");
 
     // Decorative toggle
     const decorativeLabel = document.createElement("label");
@@ -126,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     textarea.className = "alt-text-edit";
     textarea.rows = 2;
     textarea.placeholder = "Generated alt text...";
+    textarea.setAttribute("aria-label", `Alt text for ${filename || "image"}`);
     panel.appendChild(textarea);
 
     // Toggle textarea when decorative is checked
@@ -139,6 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Accept / Reject buttons
     const reviewActions = document.createElement("div");
     reviewActions.className = "review-actions";
+    reviewActions.setAttribute("role", "group");
+    reviewActions.setAttribute("aria-label", "Review actions");
 
     const acceptBtn = document.createElement("button");
     acceptBtn.className = "btn-accept";
@@ -167,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showReviewPanel(reviewPanel, result) {
     reviewPanel.style.display = "block";
+    reviewPanel.setAttribute("aria-hidden", "false");
     const textarea = reviewPanel.querySelector(".alt-text-edit");
     const decorativeCheck = reviewPanel.querySelector(".decorative-check");
 
@@ -188,11 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function generateForItem(img, genBtn, reviewPanel) {
     genBtn.textContent = "...";
     genBtn.disabled = true;
+    genBtn.setAttribute("aria-busy", "true");
 
     chrome.runtime.sendMessage(
       { type: "GENERATE_ALT_TEXT", imageUrl: img.src, context: img.context },
       (response) => {
         genBtn.style.display = "none";
+        genBtn.setAttribute("aria-busy", "false");
         showReviewPanel(reviewPanel, response || { success: false, error: "No response" });
       }
     );
@@ -226,8 +250,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const label = isDecorative
       ? "Marked as decorative"
       : `\u2713 "${altText.substring(0, 50)}${altText.length > 50 ? "..." : ""}"`;
-    reviewPanel.innerHTML = `<span class="accepted-label">${label}</span>`;
+    reviewPanel.innerHTML = `<span class="accepted-label" role="status">${label}</span>`;
     li.classList.add("item-accepted");
+    li.setAttribute("aria-label", li.getAttribute("aria-label").replace("missing alt text", isDecorative ? "marked decorative" : "alt text accepted"));
     li.dataset.accepted = "true";
     updateBulkActionVisibility();
 
@@ -241,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function rejectAltText(li, reviewPanel) {
     reviewPanel.style.display = "none";
+    reviewPanel.setAttribute("aria-hidden", "true");
     const genBtn = li.querySelector(".btn-gen-single");
     genBtn.textContent = "Generate";
     genBtn.disabled = false;
@@ -259,9 +285,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data) return;
     scoreValue.textContent = data.score;
     scoreCircle.className = "score-circle";
-    if (data.score >= 80) scoreCircle.classList.add("score-good");
-    else if (data.score >= 50) scoreCircle.classList.add("score-medium");
-    else scoreCircle.classList.add("score-bad");
+
+    let scoreLevel;
+    if (data.score >= 80) {
+      scoreCircle.classList.add("score-good");
+      scoreLevel = "Good";
+    } else if (data.score >= 50) {
+      scoreCircle.classList.add("score-medium");
+      scoreLevel = "Needs improvement";
+    } else {
+      scoreCircle.classList.add("score-bad");
+      scoreLevel = "Poor";
+    }
+    scoreCircle.setAttribute("aria-label", `Accessibility Score: ${data.score} out of 100, ${scoreLevel}`);
 
     totalImages.textContent = data.total;
     missingAlt.textContent = data.missing;
@@ -306,8 +342,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setActiveListItem(li) {
-    getAllListItems().forEach((item) => item.classList.remove("item-active"));
-    if (li) li.classList.add("item-active");
+    getAllListItems().forEach((item) => {
+      item.classList.remove("item-active");
+      item.setAttribute("aria-current", "false");
+    });
+    if (li) {
+      li.classList.add("item-active");
+      li.setAttribute("aria-current", "true");
+    }
   }
 
   function getActiveListItem() {
@@ -446,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     generateAllBtn.disabled = true;
     generateAllBtn.textContent = "Generating...";
+    generateAllBtn.setAttribute("aria-busy", "true");
     generateStatus.style.display = "block";
 
     for (let i = 0; i < missingImages.length; i++) {
@@ -466,6 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const textarea = reviewPanel.querySelector(".alt-text-edit");
       const reviewActions = reviewPanel.querySelector(".review-actions");
       reviewPanel.style.display = "block";
+      reviewPanel.setAttribute("aria-hidden", "false");
       textarea.placeholder = "Generating…";
       textarea.value = "";
       reviewActions.style.display = "none";
@@ -485,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     generateAllBtn.disabled = false;
     generateAllBtn.textContent = "Generate All Alt Text";
+    generateAllBtn.setAttribute("aria-busy", "false");
     generateStatus.textContent = `Done! Review each result below.`;
     setTimeout(() => {
       generateStatus.style.display = "none";

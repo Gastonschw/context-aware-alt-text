@@ -1,0 +1,202 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  padding: 40px;
+}
+
+.info-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 22px;
+  color: #e53935;
+  margin-bottom: 4px;
+}
+
+.version {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 12px;
+}
+
+.tagline {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+section {
+  margin-bottom: 28px;
+}
+
+h2 {
+  font-size: 16px;
+  color: #e53935;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #fce4ec;
+}
+
+h3 {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.section-hint {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 10px;
+}
+
+/* Steps */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  list-style: none;
+  counter-reset: step-counter;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 46px;
+  position: relative;
+  counter-increment: step-counter;
+}
+
+.step::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: #e53935;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.step p {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Shortcut table */
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.shortcut-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  padding: 8px 12px;
+  border-bottom: 2px solid #eee;
+}
+
+.shortcut-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.shortcut-table tbody tr:hover {
+  background: #fafafa;
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: 'Segoe UI', monospace;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 #ccc;
+  color: #333;
+}
+
+/* Getting started */
+.getting-started {
+  padding-left: 20px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.getting-started li {
+  margin-bottom: 8px;
+}
+
+/* Color guide */
+.color-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.color-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* About */
+.info-container section:last-of-type p {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.hint {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Footer */
+.info-footer {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.info-footer p {
+  font-size: 12px;
+  color: #999;
+}

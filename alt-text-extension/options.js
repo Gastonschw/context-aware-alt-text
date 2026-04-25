@@ -13,8 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Show/hide custom URL field
   serverUrl.addEventListener("change", () => {
-    customUrlGroup.style.display =
-      serverUrl.value === "custom" ? "block" : "none";
+    const isCustom = serverUrl.value === "custom";
+    customUrlGroup.style.display = isCustom ? "block" : "none";
+    customUrlGroup.setAttribute("aria-hidden", isCustom ? "false" : "true");
   });
 
   // Load saved settings
@@ -30,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           serverUrl.value = "custom";
           customUrlGroup.style.display = "block";
+          customUrlGroup.setAttribute("aria-hidden", "false");
           customUrl.value = data.tamuServerUrl;
         }
       }
@@ -52,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetchModelsBtn.disabled = true;
     fetchModelsBtn.textContent = "Loading...";
+    fetchModelsBtn.setAttribute("aria-busy", "true");
     modelsList.style.display = "none";
 
     chrome.runtime.sendMessage(
@@ -59,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (response) => {
         fetchModelsBtn.disabled = false;
         fetchModelsBtn.textContent = "Fetch Models";
+        fetchModelsBtn.setAttribute("aria-busy", "false");
 
         if (response?.success && response.models.length > 0) {
           modelsList.style.display = "block";
@@ -70,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
           select.style.borderRadius = "6px";
           select.style.border = "1px solid #ddd";
           select.style.fontSize = "13px";
+          select.setAttribute("aria-label", "Select an available model");
 
           response.models.forEach((m) => {
             const opt = document.createElement("option");

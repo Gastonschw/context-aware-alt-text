@@ -68,12 +68,14 @@
       "This image is missing alt text. Click to generate."
     );
     badge.dataset.altTextIndex = index;
+    badge.tabIndex = 0;
     badge.title = "Click to generate alt text";
 
     // Tooltip
     const tooltip = document.createElement("span");
     tooltip.className = "alt-text-tooltip";
     tooltip.dataset.altTextIndex = index;
+    tooltip.setAttribute("aria-hidden", "true");
     const src = img.src ? img.src.substring(0, 60) + "..." : "unknown";
     tooltip.textContent = `Missing alt text. Click ! to generate. Source: ${src}`;
 
@@ -82,6 +84,15 @@
       e.preventDefault();
       e.stopPropagation();
       generateForImage(img, badge, tooltip);
+    });
+
+    // Keyboard activation for badge
+    badge.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        generateForImage(img, badge, tooltip);
+      }
     });
 
     img.parentElement.insertBefore(badge, img);
@@ -97,19 +108,20 @@
 
     const context = getSurroundingContext(img);
 
-    chrome.runtime.sendMessage(
-      {
-        type: "GENERATE_ALT_TEXT",
-        imageUrl: img.src,
-        context: context,
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          badge.textContent = "X";
-          badge.classList.remove("alt-text-loading");
-          tooltip.textContent = `Error: ${chrome.runtime.lastError.message}`;
-          return;
-        }
+    try {
+      chrome.runtime.sendMessage(
+        {
+          type: "GENERATE_ALT_TEXT",
+          imageUrl: img.src,
+          context: context,
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            badge.textContent = "X";
+            badge.classList.remove("alt-text-loading");
+            tooltip.textContent = `Error: ${chrome.runtime.lastError.message}`;
+            return;
+          }
 
         if (response && response.success) {
           if (response.isDecorative) {
@@ -147,6 +159,12 @@
         }
       }
     );
+    } catch (e) {
+      badge.textContent = "X";
+      badge.classList.remove("alt-text-loading");
+      tooltip.textContent = "Extension updated — please refresh the page.";
+      tooltip.style.display = "block";
+    }
   }
 
   function scanPage() {
@@ -251,10 +269,14 @@
 
   function runScan() {
     scanResults = scanPage();
-    chrome.runtime.sendMessage({
-      type: "SCAN_RESULTS",
-      data: scanResults,
-    });
+    try {
+      chrome.runtime.sendMessage({
+        type: "SCAN_RESULTS",
+        data: scanResults,
+      });
+    } catch (e) {
+      // Extension context invalidated — page needs refresh
+    }
   }
 
   // Debounced scheduler — collapses rapid mutations into a single scan
